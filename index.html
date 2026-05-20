@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Labirinto — Busca Inteligente</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="./css/style.css">
+  <script src="./js/script.js" defer></script>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="header-top">
+        <span class="right">Inteligência Artificial</span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <!-- MAZE PANEL -->
+      <section class="maze-panel">
+        <div class="maze-header">
+          <div class="status">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Pronto</span>
+          </div>
+          <div class="maze-info">
+            <span>Algoritmo · <em id="infoAlgo">A*</em></span>
+            <span>Grid · <em id="infoGrid">21×21</em></span>
+          </div>
+        </div>
+
+        <div class="maze-wrap">
+          <div class="maze-grid" id="mazeGrid"></div>
+        </div>
+
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-swatch" style="background: var(--open)"></div>Aberto
+          </div>
+          <div class="legend-item">
+            <div class="legend-swatch" style="background: var(--wall)"></div>Parede
+          </div>
+          <div class="legend-item">
+            <div class="legend-swatch" style="background: var(--frontier)"></div>Fronteira
+          </div>
+          <div class="legend-item">
+            <div class="legend-swatch" style="background: var(--explored)"></div>Explorado
+          </div>
+          <div class="legend-item">
+            <div class="legend-swatch" style="background: var(--path)"></div>Caminho
+          </div>
+          <div class="legend-item text">🐭 Rato</div>
+          <div class="legend-item text">🧀 Queijo</div>
+        </div>
+      </section>
+
+      <!-- SIDE PANEL -->
+      <aside class="side-panel">
+        <div class="card">
+          <div class="card-title">Configuração <span class="num">01</span></div>
+
+          <div class="control">
+            <div class="control-label">
+              <span>Algoritmo</span>
+            </div>
+            <div class="radio-group">
+              <input type="radio" id="algoAStar" name="algo" value="astar" checked />
+              <label for="algoAStar">A*</label>
+              <input type="radio" id="algoGreedy" name="algo" value="greedy" />
+              <label for="algoGreedy">Gulosa</label>
+            </div>
+          </div>
+
+          <div class="control">
+            <div class="control-label">
+              <span>Tamanho do labirinto</span>
+              <span class="value" id="sizeValue">21 × 21</span>
+            </div>
+            <input type="range" id="sizeInput" min="5" max="20" step="1" value="10" />
+          </div>
+
+          <div class="control">
+            <div class="control-label">
+              <span>Velocidade da animação</span>
+              <span class="value" id="speedValue">Média</span>
+            </div>
+            <input type="range" id="speedInput" min="1" max="5" step="1" value="3" />
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Ações <span class="num">02</span></div>
+          <div class="btn-group">
+            <button class="btn btn-primary" id="btnRun">
+              <span>Executar Busca</span>
+              <span class="arrow">▶</span>
+            </button>
+            <button class="btn" id="btnGenerate">
+              <span>Gerar Novo Labirinto</span>
+              <span class="arrow">↻</span>
+            </button>
+            <button class="btn" id="btnMoveCheese">
+              <span>Reposicionar Queijo</span>
+              <span class="arrow">🧀</span>
+            </button>
+            <button class="btn" id="btnReset">
+              <span>Limpar Visualização</span>
+              <span class="arrow">×</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Métricas <span class="num">03</span></div>
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-label">Caminho</div>
+              <div class="stat-value"><span id="statPath">—</span><span class="unit">passos</span></div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Explorados</div>
+              <div class="stat-value"><span id="statExplored">—</span><span class="unit">nós</span></div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Tempo</div>
+              <div class="stat-value"><span id="statTime">—</span><span class="unit">ms</span></div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Eficiência</div>
+              <div class="stat-value"><span id="statEff">—</span><span class="unit">%</span></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- MANUAL -->
+    <section class="manual">
+      <div class="manual-header">
+        <h2>Manual de <span class="italic">Funcionamento</span></h2>
+        <span class="manual-tag">Guia rápido · 4 seções</span>
+      </div>
+
+      <div class="manual-grid">
+        <div class="manual-item">
+          <div class="manual-num">01 · USO</div>
+          <h3>Como utilizar</h3>
+          <p>
+            Escolha o algoritmo (<code>A*</code> ou <code>Gulosa</code>), ajuste o tamanho do
+            labirinto e a velocidade. Clique em <code>Executar Busca</code> para ver o rato encontrar o queijo. Para um
+            novo
+            desafio, gere outro labirinto ou apenas reposicione o queijo.
+          </p>
+        </div>
+
+        <div class="manual-item">
+          <div class="manual-num">02 · A*</div>
+          <h3>Algoritmo A-estrela</h3>
+          <p>
+            Combina o custo real percorrido <code>g(n)</code> com a estimativa
+            <code>h(n)</code> até o objetivo. Garante encontrar o caminho ótimo quando a
+            estimativa é admissível.
+          </p>
+          <div class="formula">f(n) = g(n) + h(n)</div>
+        </div>
+
+        <div class="manual-item">
+          <div class="manual-num">03 · GULOSA</div>
+          <h3>Busca Gulosa</h3>
+          <p>
+            Considera apenas a estimativa <code>h(n)</code>, escolhendo sempre
+            o vizinho aparentemente mais próximo do objetivo. É rápida, mas pode não retornar o caminho mais curto.
+          </p>
+          <div class="formula">f(n) = h(n)</div>
+        </div>
+
+        <div class="manual-item">
+          <div class="manual-num">04 · HEURÍSTICA</div>
+          <h3>Distância de Manhattan</h3>
+          <p>
+            Soma das diferenças absolutas entre coordenadas. Ideal para grids
+            com movimentos ortogonais (cima, baixo, esquerda, direita) — exatamente o caso deste labirinto.
+          </p>
+          <div class="formula">h = |x₁−x₂| + |y₁−y₂|</div>
+        </div>
+
+        <div class="manual-item">
+          <div class="manual-num">05 · GERAÇÃO</div>
+          <h3>Construção do labirinto</h3>
+          <p>
+            As paredes são geradas pelo algoritmo de <em>recursive backtracking</em>,
+            que constrói um labirinto perfeito onde todas as células são alcançáveis a partir da origem — garantindo
+            sempre um caminho até o queijo.
+          </p>
+        </div>
+
+        <div class="manual-item">
+          <div class="manual-num">06 · CORES</div>
+          <h3>O que cada cor significa</h3>
+          <p>
+            <span style="color: var(--frontier)">Azul</span> = fronteira (próximos a visitar);
+            <span style="color: var(--explored); filter: brightness(1.5)">cinza-azul</span> = já explorados;
+            <span style="color: var(--accent)">âmbar</span> = caminho ótimo encontrado.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Trabalho de Inteligência Artificial <span class="star">✦</span> Trabalho de Busca <span class="star">✦</span> 2026
+    </footer>
+  </div>
+  <div class="toast" id="toast"></div>
+</body>
+</html>
